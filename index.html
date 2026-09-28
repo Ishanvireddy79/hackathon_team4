@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AspectSense — Aspect-Based Sentiment Analysis</title>
+  <meta name="description" content="AspectSense predicts Positive, Negative, or Neutral sentiment for a given aspect term inside a review. Validation Macro F1 0.844.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="logo" href="#top">AspectSense</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <nav id="site-nav" class="site-nav" aria-label="Page">
+        <a href="#results">Results</a>
+        <a href="#training">Training</a>
+        <a href="#classes">Classes</a>
+        <a href="#how">How it works</a>
+        <a href="#limits">Limits</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section id="top" class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Aspect-based sentiment analysis</p>
+          <h1>One review, many sentiments. Score the aspect, not the whole text.</h1>
+          <p class="lede">
+            AspectSense predicts whether a given aspect term in a review is
+            <span class="pill pill-pos">Positive</span>,
+            <span class="pill pill-neg">Negative</span>, or
+            <span class="pill pill-neu">Neutral</span>.
+            A single review-level score fails when 2,330 of 4,373 unique reviews mix sentiments across aspects.
+          </p>
+          <p class="lede muted">
+            Fine-tuned <code>microsoft/deberta-v3-base</code> on 8,000 train rows.
+            Official metric: Macro F1. Secondary: accuracy.
+          </p>
+        </div>
+        <aside class="hero-score" aria-label="Best validation scores">
+          <p class="score-label">Best validation Macro F1</p>
+          <p class="score-value">0.844</p>
+          <p class="score-sub">Accuracy <strong>0.848</strong> · epoch 3 checkpoint</p>
+          <dl class="score-meta">
+            <div><dt>Train</dt><dd>8,000</dd></div>
+            <div><dt>Test</dt><dd>2,000</dd></div>
+            <div><dt>Val split</dt><dd>800 / 7,200</dd></div>
+          </dl>
+        </aside>
+      </div>
+    </section>
+
+    <section id="results" class="section">
+      <div class="wrap">
+        <header class="section-head">
+          <p class="eyebrow">Results</p>
+          <h2>DeBERTa pair input beats both TF-IDF baselines</h2>
+          <p>Validation Macro F1. The review-only logistic model cannot resolve conflicting aspects in the same text.</p>
+        </header>
+
+        <div class="compare" role="img" aria-label="Macro F1 comparison of three models">
+          <div class="compare-row">
+            <span class="compare-name">TF-IDF + logistic regression<br><small>review only</small></span>
+            <div class="compare-track">
+              <div class="compare-bar bar-base" style="--w: 37.7%"></div>
+            </div>
+            <span class="compare-num">0.377</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-name">TF-IDF + logistic regression<br><small>aspect term plus nearby words</small></span>
+            <div class="compare-track">
+              <div class="compare-bar bar-mid" style="--w: 67.0%"></div>
+            </div>
+            <span class="compare-num">0.670</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-name">DeBERTa-v3-base<br><small>aspect and review pair</small></span>
+            <div class="compare-track">
+              <div class="compare-bar bar-best" style="--w: 84.4%"></div>
+            </div>
+            <span class="compare-num">0.844</span>
+          </div>
+        </div>
+
+        <ul class="stat-row">
+          <li>
+            <span class="stat-k">Train labels</span>
+            <span class="stat-v">Neutral 3,603 · Positive 2,431 · Negative 1,966</span>
+          </li>
+          <li>
+            <span class="stat-k">Test predictions</span>
+            <span class="stat-v">Neutral 917 · Positive 586 · Negative 497 of 2,000 rows, close to the training mix</span>
+          </li>
+          <li>
+            <span class="stat-k">Hardware</span>
+            <span class="stat-v">Google Colab T4 GPU · Python 3 · PyTorch · Hugging Face Trainer</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="training" class="section alt">
+      <div class="wrap">
+        <header class="section-head">
+          <p class="eyebrow">Training by epoch</p>
+          <h2>Checkpoint chosen by Macro F1, not the last epoch</h2>
+          <p>Validation loss rose after epoch 1 (overfitting). Epoch 3 is the best Macro F1 and accuracy.</p>
+        </header>
+
+        <div class="train-layout">
+          <figure class="chart-card">
+            <figcaption>Validation Macro F1 and accuracy</figcaption>
+            <canvas id="epoch-chart" width="720" height="360" aria-hidden="true"></canvas>
+          </figure>
+          <div class="table-scroll">
+            <table>
+              <caption class="sr-only">Validation metrics by epoch</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Epoch</th>
+                  <th scope="col">Val loss</th>
+                  <th scope="col">Macro F1</th>
+                  <th scope="col">Accuracy</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>0.516</td>
+                  <td>0.793</td>
+                  <td>0.795</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>0.532</td>
+                  <td>0.824</td>
+                  <td>0.830</td>
+                </tr>
+                <tr class="is-best">
+                  <td>3 (best)</td>
+                  <td>0.604</td>
+                  <td>0.844</td>
+                  <td>0.848</td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td>0.708</td>
+                  <td>0.842</td>
+                  <td>0.846</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="footnote">Setup: learning rate 2e-5, batch size 16, 4 epochs, seed 42, max length 128, AdamW, weight decay 0.01, 180 warmup steps (10% of 1,800), linear decay, fp16. Stratified 10% validation (7,200 train, 800 validation).</p>
+      </div>
+    </section>
+
+    <section id="classes" class="section">
+      <div class="wrap">
+        <header class="section-head">
+          <p class="eyebrow">Per-class results</p>
+          <h2>All three classes sit within about 2 F1 points</h2>
+          <p>Per-class table from the saved checkpoint: Macro F1 0.8435, accuracy 0.8462. Weakest class is Negative (F1 0.836). 123 errors in 800; about 85% involve Neutral. Direct Negative/Positive flips are rare (10 + 8 = 18 of 800).</p>
+        </header>
+
+        <div class="class-layout">
+          <div class="table-scroll">
+            <table>
+              <caption class="sr-only">Precision, recall, F1 and support by class</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Class</th>
+                  <th scope="col">Precision</th>
+                  <th scope="col">Recall</th>
+                  <th scope="col">F1</th>
+                  <th scope="col">Support</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="dot dot-neg"></span> Negative</td>
+                  <td>0.8729</td>
+                  <td>0.8020</td>
+                  <td>0.8360</td>
+                  <td>197</td>
+                </tr>
+                <tr>
+                  <td><span class="dot dot-neu"></span> Neutral</td>
+                  <td>0.8382</td>
+                  <td>0.8778</td>
+                  <td>0.8575</td>
+                  <td>360</td>
+                </tr>
+                <tr>
+                  <td><span class="dot dot-pos"></span> Positive</td>
+                  <td>0.8388</td>
+                  <td>0.8354</td>
+                  <td>0.8371</td>
+                  <td>243</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <figure class="matrix-card">
+            <figcaption>Confusion matrix (true rows, predicted columns)</figcaption>
+            <div id="confusion" class="matrix" role="table" aria-label="Confusion matrix"></div>
+            <p class="matrix-note">Order: Negative, Neutral, Positive. Darker cells are more frequent.</p>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="section alt">
+      <div class="wrap">
+        <header class="section-head">
+          <p class="eyebrow">How it works</p>
+          <h2>Pair the aspect with the review, then fine-tune a 3-class head</h2>
+        </header>
+        <ol class="steps">
+          <li>
+            <h3>Explore</h3>
+            <p>Inspect label balance on 8,000 train rows: Neutral 3,603, Positive 2,431, Negative 1,966. 4,373 unique reviews; 2,330 contain aspects with different sentiments.</p>
+          </li>
+          <li>
+            <h3>Clean a data trap</h3>
+            <p>The aspect term <code>"nan"</code> was read as missing. Fixed with <code>keep_default_na=False</code>.</p>
+          </li>
+          <li>
+            <h3>Map labels</h3>
+            <p>Negative 0, Neutral 1, Positive 2.</p>
+          </li>
+          <li>
+            <h3>Encode a pair</h3>
+            <p>Input as <code>[CLS] aspect [SEP] review [SEP]</code>, truncating only the review, max length 128, dynamic padding.</p>
+          </li>
+          <li>
+            <h3>Fine-tune</h3>
+            <p>microsoft/deberta-v3-base with a new 3-class head. Weighted cross-entropy with inverse class frequency weights: Negative 1.357, Neutral 0.740, Positive 1.097.</p>
+          </li>
+          <li>
+            <h3>Select and submit</h3>
+            <p>Best checkpoint by Macro F1. Predict 2,000 test rows, write <code>submission.csv</code>, run the organizers’ validator. No API keys and no external inference API.</p>
+          </li>
+        </ol>
+        <div class="fix-box">
+          <h3>Problems fixed in training</h3>
+          <ul>
+            <li><code>warmup_ratio</code> was rejected by the newer Transformers version, so warmup_steps=180 was used.</li>
+            <li><code>tokenizer=</code> was renamed, so <code>processing_class=</code> was used.</li>
+            <li>FP16 unscale error, fixed with <code>model = model.float()</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="limits" class="section">
+      <div class="wrap">
+        <header class="section-head">
+          <p class="eyebrow">Limitations</p>
+          <h2>This page presents results. It does not run the model.</h2>
+        </header>
+        <ul class="limits">
+          <li>
+            <h3>Neutral is the hard boundary</h3>
+            <p>Most errors involve Neutral. Direct Positive/Negative flips are uncommon (18 of 800).</p>
+          </li>
+          <li>
+            <h3>Not tried</h3>
+            <p>The context_with_aspect_tag variant, multiple seeds, cross-validation, ensembles, larger models.</p>
+          </li>
+          <li>
+            <h3>Overfitting after epoch 1</h3>
+            <p>Validation loss rose from 0.516 to 0.708 by epoch 4. Selection used Macro F1, not loss.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>AspectSense · DeBERTa-v3-base · Macro F1 0.844 · Accuracy 0.848</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

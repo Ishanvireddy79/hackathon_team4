@@ -5,7 +5,7 @@
 > sentiment (Positive, Negative or Neutral) toward that specific aspect,
 > not toward the review as a whole.
 
-**🌐 [Project website](YOUR_NETLIFY_LINK)** ·
+**🌐 [Project website](https://glittering-beignet-550679.netlify.app/#top)** ·
 **📓 [Notebook](./ABSA_starter_notebook.ipynb)** ·
 **📝 [Project notes](./notes.md)** ·
 **✅ [Verified submission](./submission_verified.csv)**
